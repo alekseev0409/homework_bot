@@ -12,7 +12,12 @@ from constants import (
     TELEGRAM_CHAT_ID,
     HOMEWORK_VERDICTS,
 )
-from exception import EnvNotFound, ErrorStatusHomework, UnavailableApi, UrlError
+from exception import (
+    EnvNotFound,
+    ErrorStatusHomework,
+    UnavailableApi,
+    UrlError
+)
 from http import HTTPStatus
 
 
@@ -26,8 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 def check_tokens() -> bool:
-    """
-    Функция проверят наличие переменных окружения.
+    """Функция проверят наличие переменных окружения.
 
     :return: все ли переменные окружения установлены
     """
@@ -37,8 +41,7 @@ def check_tokens() -> bool:
 
 
 def send_message(bot: telegram.Bot, message: str) -> bool:
-    """
-    Функция отправляет сообщения в чат телеграм-бота
+    """Функция отправляет сообщения в чат телеграм-бота.
     :param bot:
     :param message: текст сообщения
 
@@ -54,8 +57,7 @@ def send_message(bot: telegram.Bot, message: str) -> bool:
 
 
 def get_api_answer(timestamp: float = None) -> dict:
-    """
-    Получаем информацию
+    """Получаем информацию.
     :param timestamp: время, для которого просматриваем домашние работы
     :return: результат корректного ответа от энд-поинта
     """
@@ -82,7 +84,8 @@ def check_response(response: dict) -> None:
     """
     if not isinstance(response, dict):
         raise TypeError
-    if not "homeworks" in response.keys() and "current_date" in response.keys():
+    if "homeworks" not in response.keys() and\
+            "current_date" in response.keys():
         raise TypeError
     if not isinstance(response["homeworks"], list):
         raise TypeError
@@ -91,8 +94,7 @@ def check_response(response: dict) -> None:
 
 
 def parse_status(homework: dict) -> str:
-    """
-    Функция проверяет статус текущей домашней работы
+    """Функция проверяет статус текущей домашней работы.
     :param homework: словарь с параметрами домашней работы
     :return: текстовая строчка с уведомлением об изменении статуса
     """
@@ -106,12 +108,9 @@ def parse_status(homework: dict) -> str:
 
 
 def main():
-    """
-    Основная логика работы бота
-
+    """Основная логика работы бота.
     :return: None
     """
-
     prev_message = ""
     cur_error = None
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
@@ -130,12 +129,15 @@ def main():
                     message = parse_status(homework)
                     if message != prev_message:
                         send_message(bot, message)
-                        send_message(bot, HOMEWORK_VERDICTS[homework['status']])
+                        send_message(bot,
+                                     HOMEWORK_VERDICTS[homework['status']]
+                                     )
                 logger.debug("Все домашние работы проверены")
             else:
                 logger.error("Ошибка в формате данных ответа.")
 
-        except (EnvNotFound, UrlError, ErrorStatusHomework, UnavailableApi) as enf:
+        except (EnvNotFound, UrlError,
+                ErrorStatusHomework, UnavailableApi) as enf:
             message = f"Сбой в работе программы: {enf}"
             logger.error(message)
             if cur_error != enf.__name__():
