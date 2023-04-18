@@ -41,9 +41,7 @@ def check_tokens() -> bool:
 
     :return: все ли переменные окружения установлены
     """
-    if not (PRACTICUM_TOKEN and TELEGRAM_TOKEN and TELEGRAM_CHAT_ID):
-        return False
-    return True
+    return PRACTICUM_TOKEN and TELEGRAM_TOKEN and TELEGRAM_CHAT_ID
 
 
 def get_api_answer(timestamp: float = None) -> dict:
@@ -55,12 +53,12 @@ def get_api_answer(timestamp: float = None) -> dict:
     now_timestamp = int(timestamp or time.time())
     params = {"from_date": now_timestamp}
     try:
+        logger.debug("Формируем запрос к эндпоинту!")
         response = requests.get(url=ENDPOINT, headers=HEADERS, params=params)
         if response.status_code != HTTPStatus.OK:
             logger.error("Сбой при запросе к эндпоинту!")
             raise UnavailableApi
-        else:
-            return response.json()
+        return response.json()
 
     except requests.exceptions.RequestException:
         logger.error("Сбой при запросе к эндпоинту!")
@@ -119,6 +117,7 @@ def parse_status(homework: dict) -> str:
 def send_message(bot: telegram.Bot, message: str) -> None:
     """Отправляет сообщение в Telegram чат."""
     try:
+        logger.debug('Формируем сообщение для отправки в телеграмм')
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logger.debug(f'Сообщение успешно отправлено в Telegram: {message}')
     except Exception as error:
